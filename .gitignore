@@ -1,0 +1,7 @@
+.env
+venv/
+venv_new/
+__pycache__/
+uploads/
+*.txt
+*.db
