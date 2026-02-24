@@ -106,6 +106,8 @@ def get_cases(request):
     for case in cases:
         wound_count = Wound.objects.filter(case=case).count()
         latest_wound = Wound.objects.filter(case=case).order_by('-upload_date').first()
+        latest_score = 0
+        latest_risk = 'normal'
         latest_image = None
         if latest_wound:
             img = latest_wound.image_path.replace('\\', '/')
@@ -114,6 +116,11 @@ def get_cases(request):
             elif img.startswith('./'):
                 img = img[2:]
             latest_image = img
+            
+            # Extract latest score and risk from saved analysis
+            if latest_wound.analysis:
+                latest_score = latest_wound.analysis.get('healingScore', latest_wound.analysis.get('overallHealth', 70))
+                latest_risk = latest_wound.analysis.get('riskLevel', 'normal')
 
         cases_data.append({
             "id": case.id,
@@ -122,6 +129,8 @@ def get_cases(request):
             "created_at": case.created_at.isoformat(),
             "wound_count": wound_count,
             "latest_image": latest_image,
+            "latest_score": latest_score,
+            "latest_risk": latest_risk,
         })
 
     return Response({"success": True, "cases": cases_data})

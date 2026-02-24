@@ -32,7 +32,9 @@ class User(AbstractBaseUser):
     # NOTE: AbstractBaseUser provides 'password' field (stores hash).
     # We alias it via property so the rest of the app uses password_hash.
     phone = models.CharField(max_length=20, null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True)
     date_of_birth = models.CharField(max_length=50, null=True, blank=True)
+    gender = models.CharField(max_length=20, null=True, blank=True)
     blood_type = models.CharField(max_length=10, null=True, blank=True)
     emergency_contact = models.CharField(max_length=100, null=True, blank=True)
     emergency_phone = models.CharField(max_length=20, null=True, blank=True)
@@ -86,6 +88,9 @@ class EmailVerificationOTP(models.Model):
     # For signup OTPs only
     pending_name = models.CharField(max_length=100, null=True, blank=True)
     pending_password_hash = models.CharField(max_length=255, null=True, blank=True)
+    pending_phone = models.CharField(max_length=20, null=True, blank=True)
+    pending_age = models.IntegerField(null=True, blank=True)
+    pending_gender = models.CharField(max_length=20, null=True, blank=True)
 
 
 # ─── Case ─────────────────────────────────────────────────────────────────────

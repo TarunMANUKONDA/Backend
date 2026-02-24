@@ -12,6 +12,7 @@ urlpatterns = [
     path('forgot-password',   auth.forgot_password),
     path('verify-reset-otp',  auth.verify_reset_otp),
     path('reset-password',    auth.reset_password),
+    path('update-profile',    auth.update_profile),
 
     # ─── Upload ───────────────────────────────────────────────────────────────
     path('upload',            upload.upload_image),

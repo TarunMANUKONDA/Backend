@@ -33,7 +33,9 @@ def _user_dict(user):
         "email": user.email,
         "email_verified": user.email_verified,
         "phone": user.phone,
+        "age": user.age,
         "date_of_birth": user.date_of_birth,
+        "gender": user.gender,
         "blood_type": user.blood_type,
         "emergency_contact": user.emergency_contact,
         "emergency_phone": user.emergency_phone,
@@ -51,6 +53,9 @@ def signup(request):
     email = data.get('email', '').lower().strip()
     name = data.get('name', '').strip()
     password = data.get('password', '')
+    phone = data.get('phone', '').strip()
+    age = data.get('age')
+    gender = data.get('gender', '').strip()
 
     if not email or not name or not password:
         return Response({"success": False, "error": "email, name and password are required"},
@@ -70,6 +75,9 @@ def signup(request):
         expires_at=expires_at,
         pending_name=name,
         pending_password_hash=hash_password(password),
+        pending_phone=phone,
+        pending_age=age,
+        pending_gender=gender,
     )
 
     email_sent = send_otp_email(email, otp_code, name)
@@ -107,7 +115,14 @@ def verify_otp(request):
     if User.objects.filter(email=email).exists():
         return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = User(name=otp_record.pending_name, email=email, email_verified=True)
+    user = User(
+        name=otp_record.pending_name, 
+        email=email, 
+        email_verified=True,
+        phone=otp_record.pending_phone,
+        age=otp_record.pending_age,
+        gender=otp_record.pending_gender
+    )
     user.password = otp_record.pending_password_hash  # already hashed
     user.save()
 
@@ -147,7 +162,13 @@ def resend_otp(request):
         email=email, otp_code=otp_code, expires_at=expires_at,
         pending_name=pending_name, pending_password_hash=pending_hash,
     )
-    send_otp_email(email, otp_code, pending_name)
+    email_sent = send_otp_email(email, otp_code, pending_name)
+    if not email_sent:
+        return Response({
+            "success": True,
+            "message": "OTP delivery failed — please try Resend again.",
+            "email_delivery_failed": True
+        })
     return Response({"success": True, "message": "OTP resent successfully"})
 
 
@@ -270,3 +291,28 @@ def reset_password(request):
     user.save()
     otp_record.delete()
     return Response({"success": True, "message": "Password has been reset successfully."})
+
+
+# ─── Profile Update ───────────────────────────────────────────────────────────
+
+@api_view(['POST'])
+def update_profile(request):
+    token = request.data.get('session_token', '')
+    session = UserSession.objects.select_related('user').filter(session_token=token).first()
+    if not session or session.expires_at < datetime.utcnow():
+        return Response({"success": False, "error": "Invalid or expired session"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    user = session.user
+    data = request.data
+
+    # Update allowed fields
+    if 'name' in data: user.name = data['name']
+    if 'phone' in data: user.phone = data['phone']
+    if 'date_of_birth' in data: user.date_of_birth = data['date_of_birth']
+    if 'gender' in data: user.gender = data['gender']
+    if 'blood_type' in data: user.blood_type = data['blood_type']
+    if 'emergency_contact' in data: user.emergency_contact = data['emergency_contact']
+    if 'emergency_phone' in data: user.emergency_phone = data['emergency_phone']
+    
+    user.save()
+    return Response({"success": True, "message": "Profile updated successfully", "user": _user_dict(user)})

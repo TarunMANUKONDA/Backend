@@ -1,0 +1,117 @@
+[2026-02-23 15:27:40] Validation Debug: Blur=359.48, Wound=False, Healed=False, Conf=0%
+[2026-02-23 15:34:42] Validating with key: AIzaSyBdEz...
+[2026-02-23 15:34:42] Attempting wound detection...
+[2026-02-23 15:34:42] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-23 15:34:49] Validation Debug: Blur=186.36, Wound=False, Healed=False, Conf=0%
+[2026-02-23 15:34:57] Validating with key: AIzaSyBdEz...
+[2026-02-23 15:34:57] Attempting wound detection...
+[2026-02-23 15:34:58] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-23 15:35:03] Validation Debug: Blur=220.42, Wound=False, Healed=False, Conf=0%
+[2026-02-23 15:40:27] Validating with key: AIzaSyBdEz...
+[2026-02-23 15:40:28] Attempting wound detection...
+[2026-02-23 15:40:28] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-23 15:40:48] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 100,
+  "explanation": "The image shows a deep, open skin ulcer with visible slough and a necrotic center, indicating an active wound process."
+}
+[2026-02-23 15:40:48] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 100, 'explanation': 'The image shows a deep, open skin ulcer with visible slough and a necrotic center, indicating an active wound process.'}
+[2026-02-23 15:40:48] Final Detection Results -> has_wound=True, is_healed=False, confidence=100.0
+[2026-02-23 15:40:48] Validation Debug: Blur=220.42, Wound=True, Healed=False, Conf=100.0%
+[2026-02-23 15:49:15] Validating with key: AIzaSyBdEz...
+[2026-02-23 15:49:15] Attempting wound detection...
+[2026-02-23 15:49:15] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-23 15:49:47] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 100,
+  "explanation": "The image clearly shows an active, open, red wound and a visible pink linear scar, indicating a recent injury or surgical procedure that is not yet fully healed."
+}
+[2026-02-23 15:49:47] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 100, 'explanation': 'The image clearly shows an active, open, red wound and a visible pink linear scar, indicating a recent injury or surgical procedure that is not yet fully healed.'}
+[2026-02-23 15:49:47] Final Detection Results -> has_wound=True, is_healed=False, confidence=100.0
+[2026-02-23 15:49:47] Validation Debug: Blur=570.66, Wound=True, Healed=False, Conf=100.0%
+[2026-02-24 08:20:38] Validating with key: AIzaSyBdEz...
+[2026-02-24 08:20:38] Attempting wound detection...
+[2026-02-24 08:20:39] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-24 08:20:51] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 100,
+  "explanation": "The image shows a large skin graft on the side of the foot that is held in place with visible surgical sutures along its perimeter, representing an active surgical wound site."
+}
+[2026-02-24 08:20:51] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 100, 'explanation': 'The image shows a large skin graft on the side of the foot that is held in place with visible surgical sutures along its perimeter, representing an active surgical wound site.'}
+[2026-02-24 08:20:51] Final Detection Results -> has_wound=True, is_healed=False, confidence=100.0
+[2026-02-24 08:20:51] Validation Debug: Blur=142.62, Wound=True, Healed=False, Conf=100.0%
+[2026-02-24 09:35:37] Validating with key: AIzaSyBdEz...
+[2026-02-24 09:35:37] Attempting wound detection...
+[2026-02-24 09:35:38] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-24 09:35:50] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 100,
+  "explanation": "The image shows a large, active vertical surgical incision on the abdomen closed with sutures. There is visible redness and inflammation around the incision site, along with adjacent medical dressings and a medical collection bag, indicating a recent surgical procedure."
+}
+[2026-02-24 09:35:50] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 100, 'explanation': 'The image shows a large, active vertical surgical incision on the abdomen closed with sutures. There is visible redness and inflammation around the incision site, along with adjacent medical dressings and a medical collection bag, indicating a recent surgical procedure.'}
+[2026-02-24 09:35:50] Final Detection Results -> has_wound=True, is_healed=False, confidence=100.0
+[2026-02-24 09:35:50] Validation Debug: Blur=125.12, Wound=True, Healed=False, Conf=100.0%
+[2026-02-24 09:37:29] Validating with key: AIzaSyBdEz...
+[2026-02-24 09:37:29] Attempting wound detection...
+[2026-02-24 09:37:30] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-24 09:37:57] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 100,
+  "explanation": "The image clearly shows a deep, linear break in the skin (a fissure) with visible dark crusting and surrounding inflammation, indicating an active, unhealed wound."
+}
+[2026-02-24 09:37:57] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 100, 'explanation': 'The image clearly shows a deep, linear break in the skin (a fissure) with visible dark crusting and surrounding inflammation, indicating an active, unhealed wound.'}
+[2026-02-24 09:37:57] Final Detection Results -> has_wound=True, is_healed=False, confidence=100.0
+[2026-02-24 09:37:57] Validation Debug: Blur=285.42, Wound=True, Healed=False, Conf=100.0%
+[2026-02-24 09:39:53] Validating with key: AIzaSyBdEz...
+[2026-02-24 09:39:53] Attempting wound detection...
+[2026-02-24 09:39:53] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-24 09:40:04] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 100,
+  "explanation": "The image shows a large, active wound area covered in a significant amount of yellowish slough/exudate with surrounding red, inflamed skin borders. A medical ruler is visible for measurement, confirming clinical assessment of an active lesion."
+}
+[2026-02-24 09:40:04] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 100, 'explanation': 'The image shows a large, active wound area covered in a significant amount of yellowish slough/exudate with surrounding red, inflamed skin borders. A medical ruler is visible for measurement, confirming clinical assessment of an active lesion.'}
+[2026-02-24 09:40:04] Final Detection Results -> has_wound=True, is_healed=False, confidence=100.0
+[2026-02-24 09:40:04] Validation Debug: Blur=272.82, Wound=True, Healed=False, Conf=100.0%
+[2026-02-24 09:42:48] Validating with key: AIzaSyBdEz...
+[2026-02-24 09:42:48] Attempting wound detection...
+[2026-02-24 09:42:48] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-24 09:42:58] Validating with key: AIzaSyBdEz...
+[2026-02-24 09:42:58] Attempting wound detection...
+[2026-02-24 09:42:58] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-24 09:43:12] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 95,
+  "explanation": "The image displays a localized skin lesion that appears to be a recent surgical incision or scar. It is pinkish and slightly raised, which, according to the provided instructions, classifies it as an active wound rather than a fully matured, old white scar."
+}
+[2026-02-24 09:43:12] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 95, 'explanation': 'The image displays a localized skin lesion that appears to be a recent surgical incision or scar. It is pinkish and slightly raised, which, according to the provided instructions, classifies it as an active wound rather than a fully matured, old white scar.'}
+[2026-02-24 09:43:12] Final Detection Results -> has_wound=True, is_healed=False, confidence=95.0
+[2026-02-24 09:43:12] Validation Debug: Blur=9.07, Wound=True, Healed=False, Conf=95.0%
+[2026-02-24 09:43:20] Validating with key: AIzaSyBdEz...
+[2026-02-24 09:43:20] Attempting wound detection...
+[2026-02-24 09:43:21] Available models according to genai: ['models/gemini-2.5-flash', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-exp-image-generation', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-3-pro-preview', 'models/gemini-3-flash-preview', 'models/gemini-3.1-pro-preview', 'models/gemini-3.1-pro-preview-customtools', 'models/gemini-3-pro-image-preview', 'models/nano-banana-pro-preview', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/deep-research-pro-preview-12-2025']
+[2026-02-24 09:43:33] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 98,
+  "explanation": "The image shows a vertical, linear skin lesion with areas of erythema and central depressions. This appears to be a surgical incision site that is currently in the process of healing and is not yet a mature, flat scar."
+}
+[2026-02-24 09:43:33] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 98, 'explanation': 'The image shows a vertical, linear skin lesion with areas of erythema and central depressions. This appears to be a surgical incision site that is currently in the process of healing and is not yet a mature, flat scar.'}
+[2026-02-24 09:43:33] Final Detection Results -> has_wound=True, is_healed=False, confidence=98.0
+[2026-02-24 09:43:33] Validation Debug: Blur=71.25, Wound=True, Healed=False, Conf=98.0%
+[2026-02-24 09:43:35] Raw Gemini Response: {
+  "has_wound": true,
+  "is_healed": false,
+  "confidence": 100,
+  "explanation": "The image clearly shows a fresh surgical incision that has been closed with sutures, accompanied by significant bruising in the surrounding skin."
+}
+[2026-02-24 09:43:35] Parsed Gemini Result: {'has_wound': True, 'is_healed': False, 'confidence': 100, 'explanation': 'The image clearly shows a fresh surgical incision that has been closed with sutures, accompanied by significant bruising in the surrounding skin.'}
+[2026-02-24 09:43:35] Final Detection Results -> has_wound=True, is_healed=False, confidence=100.0
+[2026-02-24 09:43:35] Validation Debug: Blur=10127.32, Wound=True, Healed=False, Conf=100.0%

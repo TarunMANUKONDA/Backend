@@ -51,11 +51,51 @@ def get_recommendations(request):
             pink, red, yellow, black, white = round(pink*f,1), round(red*f,1), round(yellow*f,1), round(black*f,1), round(white*f,1)
         tissue = {"pink": pink, "red": red, "yellow": yellow, "black": black, "white": white}
 
-        severity_score = (black * 3) + ((yellow + white) * 2) + (red * 1)
-        if severity_score < 50: severity_level = "Low"
-        elif severity_score < 100: severity_level = "Moderate"
-        elif severity_score < 200: severity_level = "High"
-        else: severity_level = "Critical"
+        # ── Professor-Style Severity Score (0–300 scale) ───────────────────────
+        # Component A: Tissue Composition  (max 120 pts)
+        #   Necrosis (black)  × 3.0  — highest weight: tissue death
+        #   Slough   (yellow) × 1.5  — fibrin/slough indicates stall
+        #   White    (fibrin) × 1.0  — mild concern
+        #   Red      (granulation) × -0.5  — healthy tissue, moderate credit
+        #   Pink     (epithelial)  × -1.0  — best healing sign
+        tissue_score = (
+            black  * 3.0 +
+            yellow * 1.5 +
+            white  * 1.0 +
+            red    * (-0.5) +
+            pink   * (-1.0)
+        )
+        # tissue_score raw range ≈ -100 to +500; scale to 0–120
+        tissue_component = max(0, min(120, 60 + tissue_score * 0.4))
+
+        # Component B: Infection / Discharge (max 80 pts)
+        discharge_pts = {"none": 0, "clear": 10, "bloody": 25, "yellow": 55, "green": 75}.get(discharge_type, 0)
+        redness_spread_pts = 30 if redness_spread else 0
+        infection_component = min(80, discharge_pts + redness_spread_pts)
+
+        # Component C: Symptom Burden (max 60 pts)
+        pain_pts = {"none": 0, "mild": 10, "moderate": 25, "severe": 50}.get(pain_level, 0)
+        fever_pts = 40 if fever else 0
+        symptom_component = min(60, pain_pts + fever_pts)
+
+        # Component D: Wound Type Alignment (max 40 pts)
+        #   Penalise if AI classification indicates concern
+        type_lower = wound_type.lower()
+        if "high urgency" in type_lower or "active infection" in type_lower:
+            type_pts = 40
+        elif "delayed" in type_lower or "infection risk" in type_lower:
+            type_pts = 20
+        else:
+            type_pts = 0
+
+        severity_score = tissue_component + infection_component + symptom_component + type_pts
+        severity_score = round(max(0.0, min(300.0, severity_score)), 1)
+
+        # ── Severity Level from score ────────────────────────────────────────
+        if severity_score >= 200:    severity_level = "Critical"
+        elif severity_score >= 130:  severity_level = "High"
+        elif severity_score >= 65:   severity_level = "Moderate"
+        else:                        severity_level = "Low"
 
         risk_override = False
         symptoms_context = ""
