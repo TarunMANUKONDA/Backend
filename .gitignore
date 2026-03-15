@@ -1,7 +1,63 @@
+# ── Secrets ──────────────────────────────────────────────────────────────────
 .env
+*.env
+
+# ── Python virtual environment ────────────────────────────────────────────────
 venv/
 venv_new/
+.venv/
+env/
+
+# ── Python compiled bytecode ──────────────────────────────────────────────────
 __pycache__/
-uploads/
-*.txt
+*.py[cod]
+*$py.class
+*.pyo
+
+# ── Django / Database ─────────────────────────────────────────────────────────
 *.db
+*.sqlite3
+
+# ── Uploaded user images (runtime data — never commit) ────────────────────────
+uploads/
+
+# ── ML / AI Model files (too large for git — store separately) ───────────────
+# TFLite models
+*.tflite
+models/
+api/models/
+
+# PyTorch / ONNX / Keras models
+*.pt
+*.pth
+*.onnx
+*.h5
+*.bin
+
+# CLIP / Huggingface tokenizer & model files
+api/models/clip/pytorch_model.bin
+api/models/clip/merges.txt
+api/models/clip/tokenizer.json
+api/models/clip/vocab.json
+api/models/clip/tokenizer_config.json
+api/models/clip/preprocessor_config.json
+api/models/clip/special_tokens_map.json
+api/models/clip/config.json
+
+# ── Test / temp files (not production code) ───────────────────────────────────
+test_*.jpg
+test_*.png
+test_output*
+test_boundary.jpg
+test_overlay.jpg
+verify_*.py
+confirm_all.py
+
+# ── Log & text output files ───────────────────────────────────────────────────
+*.log
+*.txt
+
+# ── Build / runtime ───────────────────────────────────────────────────────────
+build/
+dist/
+*.egg-info/

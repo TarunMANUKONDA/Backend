@@ -102,6 +102,7 @@ class Case(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cases')
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=50, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -126,6 +127,7 @@ class Wound(models.Model):
     discharge_type = models.CharField(max_length=50, null=True, blank=True)
     edge_quality = models.IntegerField(null=True, blank=True)
     tissue_composition = models.JSONField(null=True, blank=True)
+    is_confirmed = models.BooleanField(default=False, db_index=True)
     analysis = models.JSONField(null=True, blank=True)
 
 

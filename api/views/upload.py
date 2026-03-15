@@ -62,7 +62,7 @@ def upload_image(request):
         return Response({
             "success": True,
             "wound_id": wound.id,
-            "image_path": relative_path,
+            "image_path": request.build_absolute_uri('/' + relative_path.lstrip('/')),
             "message": "Image uploaded successfully",
         })
     except Exception as e:

@@ -13,7 +13,7 @@ def get_history(request):
     limit = int(request.query_params.get('limit', 50))
     offset = int(request.query_params.get('offset', 0))
 
-    qs = Wound.objects.filter(user_id=user_id)
+    qs = Wound.objects.filter(user_id=user_id, is_confirmed=True)
     if case_id:
         qs = qs.filter(case_id=int(case_id))
 
@@ -26,13 +26,51 @@ def get_history(request):
         recommendation = None
         if clf:
             rec = Recommendation.objects.filter(classification=clf).first()
+            
+            summary = ""
+            cleaning = []
+            warnings = []
+            dressing = []
+            
             if rec:
-                recommendation = {
-                    "summary": rec.summary,
-                    "cleaning_instructions": rec.cleaning_instructions,
-                    "dressing_recommendations": rec.dressing_recommendations,
-                    "warning_signs": rec.warning_signs,
+                summary = rec.summary
+                cleaning = rec.cleaning_instructions
+                warnings = rec.warning_signs
+                dressing = rec.dressing_recommendations
+            
+            # REPAIR LOGIC: If historical record is missing or has 'unavailable' message
+            if not rec or "unavailable" in (summary or "").lower():
+                from .recommend import get_clinical_recommendations_logic
+                
+                # Extract data for rule engine
+                # confidence used as fallback for historical records
+                confidence = wound.confidence or 70.0
+                tissue = wound.tissue_composition or {}
+                w_type = clf.wound_type if clf else (wound.classification or "Wound")
+                
+                symptoms = {
+                    "fever": wound.analysis.get('fever', False) if wound.analysis else False,
+                    "discharge_type": wound.discharge_type or "none",
+                    "pain_level": wound.analysis.get('pain_level', 'none') if wound.analysis else 'none',
+                    "redness_spread": False 
                 }
+                
+                # Generate robust clinical guidance using the core logic
+                fallback_result = get_clinical_recommendations_logic(clf, w_type, confidence, symptoms)
+                
+                if fallback_result.get("success"):
+                    fallback = fallback_result.get("recommendation", {})
+                    summary = fallback.get("summary", "")
+                    cleaning = fallback.get("cleaningInstructions", [])
+                    warnings = fallback.get("warningsSigns", [])
+                    dressing = fallback.get("dressingRecommendations", [])
+
+            recommendation = {
+                "summary": summary,
+                "cleaning_instructions": cleaning,
+                "dressing_recommendations": dressing,
+                "warning_signs": warnings,
+            }
 
         # Normalize path: strip absolute prefix if old records have it,
         # new records already store 'uploads/filename'
@@ -42,11 +80,19 @@ def get_history(request):
             img_path = 'uploads/' + img_path.split('/uploads/')[-1]
         elif img_path.startswith('./'):
             img_path = img_path[2:]
+        elif not img_path.startswith('uploads/') and not img_path.startswith('http'):
+            img_path = 'uploads/' + img_path
+
+        # Build absolute URL if not already one
+        if not img_path.startswith('http'):
+            full_url = request.build_absolute_uri('/' + img_path.lstrip('/'))
+        else:
+            full_url = img_path
 
         wounds_data.append({
             "wound_id": wound.id,
             "case_id": wound.case_id,
-            "image_path": img_path,
+            "image_path": full_url,  # ← Return absolute URL
             "original_filename": wound.original_filename,
             "upload_date": wound.upload_date.isoformat(),
             "status": wound.status,
@@ -104,23 +150,33 @@ def get_cases(request):
 
     cases_data = []
     for case in cases:
-        wound_count = Wound.objects.filter(case=case).count()
-        latest_wound = Wound.objects.filter(case=case).order_by('-upload_date').first()
+        wound_count = Wound.objects.filter(case=case, is_confirmed=True).count()
+        latest_wound = Wound.objects.filter(case=case, is_confirmed=True).order_by('-upload_date').first()
         latest_score = 0
         latest_risk = 'normal'
         latest_image = None
+        latest_tissue = None
         if latest_wound:
             img = latest_wound.image_path.replace('\\', '/')
             if '/uploads/' in img:
                 img = 'uploads/' + img.split('/uploads/')[-1]
             elif img.startswith('./'):
                 img = img[2:]
-            latest_image = img
+            elif not img.startswith('uploads/') and not img.startswith('http'):
+                img = 'uploads/' + img
+            
+            # Build absolute URL if not already one
+            if not img.startswith('http'):
+                latest_image = request.build_absolute_uri('/' + img.lstrip('/'))
+            else:
+                latest_image = img
             
             # Extract latest score and risk from saved analysis
             if latest_wound.analysis:
                 latest_score = latest_wound.analysis.get('healingScore', latest_wound.analysis.get('overallHealth', 70))
                 latest_risk = latest_wound.analysis.get('riskLevel', 'normal')
+            
+            latest_tissue = latest_wound.tissue_composition or (latest_wound.analysis.get('tissue_composition') if latest_wound.analysis else None)
 
         cases_data.append({
             "id": case.id,
@@ -131,6 +187,8 @@ def get_cases(request):
             "latest_image": latest_image,
             "latest_score": latest_score,
             "latest_risk": latest_risk,
+            "latest_tissue": latest_tissue,
+            "status": case.status,
         })
 
     return Response({"success": True, "cases": cases_data})
@@ -138,31 +196,21 @@ def get_cases(request):
 
 @api_view(['DELETE'])
 def delete_wound(request, wound_id):
-    """Delete a wound and its child records."""
+    """Delete a wound (cascade handled by DB)."""
     wound = Wound.objects.filter(id=wound_id).first()
     if not wound:
         return Response({"error": "Wound not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    # Cascade manually
-    for clf in Classification.objects.filter(wound=wound):
-        Recommendation.objects.filter(classification=clf).delete()
-    Classification.objects.filter(wound=wound).delete()
     wound.delete()
     return Response({"success": True, "message": f"Wound {wound_id} deleted"})
 
 
 @api_view(['DELETE'])
 def delete_case(request, case_id):
-    """Delete a case and all its wounds."""
+    """Delete a case and all its wounds (cascade handled by DB)."""
     case = Case.objects.filter(id=case_id).first()
     if not case:
         return Response({"error": "Case not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    for wound in Wound.objects.filter(case=case):
-        for clf in Classification.objects.filter(wound=wound):
-            Recommendation.objects.filter(classification=clf).delete()
-        Classification.objects.filter(wound=wound).delete()
-        wound.delete()
 
     case.delete()
     return Response({"success": True, "message": f"Case {case_id} and all its wounds deleted"})

@@ -49,6 +49,7 @@ def _user_dict(user):
 @api_view(['POST'])
 def signup(request):
     """Send OTP — user record is created only after OTP is confirmed."""
+    print(f"DEBUG: signup attempt for email: {request.data.get('email')}")
     data = request.data
     email = data.get('email', '').lower().strip()
     name = data.get('name', '').strip()
@@ -313,6 +314,7 @@ def update_profile(request):
     if 'blood_type' in data: user.blood_type = data['blood_type']
     if 'emergency_contact' in data: user.emergency_contact = data['emergency_contact']
     if 'emergency_phone' in data: user.emergency_phone = data['emergency_phone']
+    if 'profile_image' in data: user.profile_image = data['profile_image']
     
     user.save()
     return Response({"success": True, "message": "Profile updated successfully", "user": _user_dict(user)})

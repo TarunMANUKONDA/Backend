@@ -1,5 +1,5 @@
 from django.urls import path
-from api.views import auth, upload, classify, recommend, history, comparison, validate
+from api.views import auth, upload, classify, recommend, history, comparison, validate, analyze, chat, confirm
 
 urlpatterns = [
     # ─── Auth ────────────────────────────────────────────────────────────────
@@ -17,6 +17,9 @@ urlpatterns = [
     # ─── Upload ───────────────────────────────────────────────────────────────
     path('upload',            upload.upload_image),
 
+    # ─── Unified Analyze ──────────────────────────────────────────────────────
+    path('analyze_full',      analyze.analyze_full),
+
     # ─── Classify ─────────────────────────────────────────────────────────────
     path('classify',          classify.classify_wound),
 
@@ -28,6 +31,7 @@ urlpatterns = [
     path('create_case',       history.create_case),
     path('cases',             history.get_cases),
     path('wounds/<int:wound_id>', history.delete_wound),
+    path('wounds/<int:wound_id>/confirm', confirm.confirm_wound),
     path('cases/<int:case_id>',   history.delete_case),
 
     # ─── Comparison ───────────────────────────────────────────────────────────
@@ -37,4 +41,7 @@ urlpatterns = [
 
     # ─── Validate ─────────────────────────────────────────────────────────────
     path('validate',          validate.validate_image),
+
+    # ─── AI Chat ──────────────────────────────────────────────────────────────
+    path('chat/ollama',       chat.ollama_chat),
 ]
