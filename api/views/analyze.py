@@ -10,39 +10,50 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from api.models import Wound, Classification, Recommendation
-from api import tflite_classifier
-from api.views.classify import classify_wound
-
-# I'll need to refactor recommend.py or just copy the logic for now to keep it fast.
-# Given the urgency, I'll implement a helper that contains the core recommendation logic.
+from api.views.classify import _classify_wound_internal
 
 def generate_full_analysis(request, wound_id, symptoms=None):
     """
-    Performs full local analysis:
-    1. TFLite + CLIP Tissue Classification
-    2. Rule-based Recommendations
+    Performs full local analysis WITHOUT saving to DB:
+    1. CLIP + Heuristic Tissue Classification (Preview)
+    2. Rule-based Recommendations (Preview)
     """
-    # Simply reuse the logic from classify_wound
+    from api.models import Wound
+    from api.views.classify import _classify_wound_internal
     from rest_framework.request import Request
-    from rest_framework.parsers import JSONParser
     
-    # Mock a request for classify_wound
+    wound = Wound.objects.filter(id=wound_id).first()
+    if not wound:
+        return {"success": False, "error": "Wound not found"}
+
+    # Mock a request for _classify_wound_internal
     factory_request = Request(request._request)
     factory_request.data.update({
         "wound_id": wound_id,
-        "clinical_data": symptoms # This is the React PatientAnswers object
+        "clinical_data": symptoms
     })
     
-    classify_response = classify_wound(factory_request)
-    if not classify_response.data.get("success"):
-        return classify_response.data
+    # Run classification in preview mode (no DB save)
+    data = _classify_wound_internal(factory_request, save_to_db=False)
+    if not data.get("success"):
+        return data
 
-    data = classify_response.data
-    clf = Classification.objects.get(id=data["classification_id"])
+    # Prepare symptoms with tissue/healing context for recommendation logic
+    # since we haven't saved them to the wound object yet
+    rec_symptoms = (symptoms or {}).copy()
+    rec_symptoms['tissue_composition'] = data.get('tissue_composition')
+    rec_symptoms['healing_details'] = data.get('healing_details')
     
-    # Generate Recommendations
+    # Generate Recommendations in preview mode (no DB save)
     from api.views.recommend import get_clinical_recommendations_logic
-    rec_result = get_clinical_recommendations_logic(clf, data["wound_type"], data["confidence"], symptoms)
+    rec_result = get_clinical_recommendations_logic(
+        wound, 
+        data["wound_type"], 
+        data["confidence"], 
+        rec_symptoms, 
+        save_to_db=False
+    )
+
     
     data["recommendation"] = rec_result.get("recommendation") if rec_result.get("success") else None
     data["risk_level"] = rec_result.get("risk_level", "Unknown")
@@ -52,7 +63,8 @@ def generate_full_analysis(request, wound_id, symptoms=None):
 
 @api_view(['POST'])
 def analyze_full(request):
-    """Unified endpoint for full wound analysis."""
+    """Unified endpoint for full wound analysis (Preview Mode)."""
+
     wound_id = request.data.get('wound_id')
     symptoms = request.data.get('symptoms', {})
 
@@ -63,4 +75,7 @@ def analyze_full(request):
         result = generate_full_analysis(request, wound_id, symptoms)
         return Response(result)
     except Exception as e:
+        import traceback
+        traceback.print_exc()
+
         return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

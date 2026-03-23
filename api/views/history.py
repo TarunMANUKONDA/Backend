@@ -83,16 +83,12 @@ def get_history(request):
         elif not img_path.startswith('uploads/') and not img_path.startswith('http'):
             img_path = 'uploads/' + img_path
 
-        # Build absolute URL if not already one
-        if not img_path.startswith('http'):
-            full_url = request.build_absolute_uri('/' + img_path.lstrip('/'))
-        else:
-            full_url = img_path
 
         wounds_data.append({
             "wound_id": wound.id,
             "case_id": wound.case_id,
-            "image_path": full_url,  # ← Return absolute URL
+            "image_path": img_path,  # Return relative path for frontend localization
+
             "original_filename": wound.original_filename,
             "upload_date": wound.upload_date.isoformat(),
             "status": wound.status,
@@ -146,7 +142,10 @@ def create_case(request):
 def get_cases(request):
     """Get all cases for a user."""
     user_id = int(request.query_params.get('user_id', 1))
-    cases = Case.objects.filter(user_id=user_id).order_by('-created_at')
+    from django.db.models import Count, Q
+    cases = Case.objects.filter(user_id=user_id).annotate(
+        confirmed_count=Count('wounds', filter=Q(wounds__is_confirmed=True))
+    ).filter(confirmed_count__gt=0).order_by('-created_at')
 
     cases_data = []
     for case in cases:
@@ -165,11 +164,9 @@ def get_cases(request):
             elif not img.startswith('uploads/') and not img.startswith('http'):
                 img = 'uploads/' + img
             
-            # Build absolute URL if not already one
-            if not img.startswith('http'):
-                latest_image = request.build_absolute_uri('/' + img.lstrip('/'))
-            else:
-                latest_image = img
+            # Return relative path for frontend localization
+            latest_image = img
+
             
             # Extract latest score and risk from saved analysis
             if latest_wound.analysis:

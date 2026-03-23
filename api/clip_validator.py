@@ -9,30 +9,42 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 import os
 import io
 
+# Silence TensorFlow / oneDNN logging in case of direct import
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 class CLIPValidator:
     _instance = None
     _model = None
     _processor = None
     
     PROMPTS = [
-        "photo of an open wound with raw tissue",
-        "photo of a burn wound on skin with redness or blisters",
-        "photo of a stitched surgical wound with visible sutures, staples, or threads",
-        "photo of a matured flat scar on skin surface",
-        "photo of a fully healed wound skin texture",
-        "photo of healthy normal skin without marks",
-        "photo of clear skin with no wound or scar"
+        "a clinical photo of an open wound",
+        "a stitched surgical incision with sutures",
+        "a burn wound on human skin",
+        "a healed scar on skin",
+        "a healed surgical wound",
+        "healthy normal human skin",
+        "an everyday object, not a medical photo", 
+        "clothing, fabric, or accessories",
+        "a random background image without a wound",
+        "an animal or pet",
+        "a blurry or out of focus image"
     ]
     
     # Mapping for friendly responses and internal logic
     PROMPT_MAP = {
-        "photo of an open wound with raw tissue": "open_wound",
-        "photo of a burn wound on skin with redness or blisters": "burn_wound",
-        "photo of a stitched surgical wound with visible sutures, staples, or threads": "sutured_wound",
-        "photo of a matured flat scar on skin surface": "scar",
-        "photo of a fully healed wound skin texture": "healed_wound",
-        "photo of healthy normal skin without marks": "normal_skin",
-        "photo of clear skin with no wound or scar": "no_wound"
+        "a clinical photo of an open wound": "open_wound",
+        "a stitched surgical incision with sutures": "sutured_wound",
+        "a burn wound on human skin": "burn_wound",
+        "a healed scar on skin": "scar",
+        "a healed surgical wound": "healed_wound",
+        "healthy normal human skin": "normal_skin",
+        "an everyday object, not a medical photo": "no_wound",
+        "clothing, fabric, or accessories": "no_wound",
+        "a random background image without a wound": "no_wound",
+        "an animal or pet": "no_wound",
+        "a blurry or out of focus image": "blur"
     }
 
     TISSUE_PROMPTS = [
@@ -68,7 +80,8 @@ class CLIPValidator:
                 print(f"[CLIP] Loading local CLIP model from {model_path}...")
                 
                 self._model = CLIPModel.from_pretrained(model_path, local_files_only=True)
-                self._processor = CLIPProcessor.from_pretrained(model_path, local_files_only=True)
+                self._processor = CLIPProcessor.from_pretrained(model_path, local_files_only=True, clean_up_tokenization_spaces=True)
+
                 print("[CLIP] CLIP model loaded successfully (Offline Mode).")
             except Exception as e:
                 print(f"[CLIP] Error loading CLIP model: {e}")
@@ -115,11 +128,19 @@ class CLIPValidator:
             idx = torch.argmax(similarity, dim=1).item()
             prediction_label = self.PROMPTS[idx]
             confidence = similarity[0][idx].item() * 100
+
+            # Map to friendlier names
+            friendly_label = self.PROMPT_MAP.get(prediction_label, prediction_label)
             
-            result_key = self.PROMPT_MAP.get(prediction_label, "unknown")
-            print(f"[CLIP] Validation (Updated Logic): {result_key} ({confidence:.1f}%)")
+            # Additional safety net: if the model predicts something outside our core valid categories, reject it
+            core_categories = ["open_wound", "sutured_wound", "burn_wound", "scar", "healed_wound", "normal_skin"]
+            if friendly_label not in core_categories:
+                friendly_label = "no_wound"
             
-            return result_key, confidence
+            print(f"[CLIP] Classified as: {friendly_label} ({confidence:.2f}%)")
+            
+            return friendly_label, confidence
+
         except Exception as e:
             print(f"[CLIP] Validation error: {e}")
             return "error", 0.0

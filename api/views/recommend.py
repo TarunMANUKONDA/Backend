@@ -32,8 +32,9 @@ def generate_enhanced_local_recommendations(classification, wound_type, risk_lev
     pink = float(tissue.get('pink', 0))
     
     fever = bool(symptoms.get('fever', False))
-    discharge = symptoms.get('discharge_type', 'none')
-    redness_spread = bool(symptoms.get('redness_spread', False))
+    discharge = symptoms.get('discharge', 'none')
+    redness_spread = bool(symptoms.get('rednessSpread', False))
+
 
     # Extract wound area if available
     analysis = classification.wound.analysis or {}
@@ -170,77 +171,104 @@ def generate_enhanced_local_recommendations(classification, wound_type, risk_lev
         "confidence": 95
     }
 
-def get_clinical_recommendations_logic(classification, wound_type, confidence, symptoms=None):
+def get_clinical_recommendations_logic(classification_or_wound, wound_type, confidence, symptoms=None, save_to_db=True):
     """
-    Core logic for generating recommendations using the rule-based engine.
+    Core logic for generating recommendations.
+    Accepts either a Classification object or just a Wound object (for pre-save analysis).
     """
+    from api.models import Wound, Classification
+    
+    if isinstance(classification_or_wound, Classification):
+        classification = classification_or_wound
+        wound = classification.wound
+    else:
+        classification = None
+        wound = classification_or_wound
+
     symptoms = symptoms or {}
-    pain_level = symptoms.get('pain_level', 'none')
+    pain_level = symptoms.get('painLevel', 'none')
     fever = bool(symptoms.get('fever', False))
-    discharge_type = symptoms.get('discharge_type', 'none')
-    redness_spread = bool(symptoms.get('redness_spread', False))
+    discharge_type = symptoms.get('discharge', 'none')
+    if discharge_type == 'no': discharge_type = 'dry'
+    redness_spread = bool(symptoms.get('rednessSpread', False))
 
-    classification.wound.refresh_from_db()
-    img_redness = float(classification.wound.redness_level or 0)
-    img_discharge = classification.wound.discharge_type or 'none'
+    wound.refresh_from_db()
+    img_redness = float(wound.redness_level or 0)
+    img_discharge = wound.discharge_type or 'none'
 
-    final_discharge_type = symptoms.get('discharge_type', 'none')
+    final_discharge_type = symptoms.get('discharge', 'none')
     if final_discharge_type in ['none', ''] and img_discharge != 'none':
         final_discharge_type = img_discharge
     
     discharge_detected = final_discharge_type not in ['none', '']
 
     try:
-        tissue = classification.wound.tissue_composition or {}
+        tissue = wound.tissue_composition or {}
+        # Fallback if tissue hasn't been saved to wound yet (it might be in symptoms or passed elsewhere)
+        if not tissue and symptoms.get('tissue_composition'):
+            tissue = symptoms.get('tissue_composition')
+            
         if not tissue:
-            w = wound_type.lower()
-            if 'normal' in w or 'healing' in w:
-                tissue = {"pink": 70, "red": 30, "yellow": 0, "black": 0, "white": 0}
-            elif 'delayed' in w:
-                tissue = {"pink": 30, "red": 40, "yellow": 30, "black": 0, "white": 0}
-            else:
-                tissue = {"pink": 0, "red": 30, "yellow": 30, "black": 40, "white": 0}
+            # If no tissue data is available anywhere, we return early or use a safe empty baseline
+            # instead of hardcoding "Normal" or "Delayed" profiles which mask actual failures.
+            print("[RECOMMEND] Warning: No tissue composition found for wound.")
+            tissue = {"pink": 0, "red": 0, "yellow": 0, "black": 0, "white": 0}
+
 
         pink  = float(tissue.get('pink', 0))
         red   = float(tissue.get('red', 0))
         yellow = float(tissue.get('yellow', 0))
         black = float(tissue.get('black', 0))
-        white = float(tissue.get('white', 0))        # Use the healing results passed from classify_wound or calculate if missing
-        healing_details = classification.wound.analysis.get("healing_details", {})
+        white = float(tissue.get('white', 0))
+
+        # Retrieve healing details from wound analysis or symptoms
+        healing_details = (wound.analysis or {}).get("healing_details", {})
+        if not healing_details and symptoms.get('healing_details'):
+            healing_details = symptoms.get('healing_details')
+
         if not healing_details:
-             # Fallback calculation if not stored
              healing_details = calculate_healing_score(
                 granulation=red, epithelial=pink, slough=yellow, necrotic=black, white=white,
                 surgery_days=int(symptoms.get('daysSinceSurgery', 0)),
-                pain_level=symptoms.get('pain_level', 'none'),
-                drainage_type=symptoms.get('discharge_type', 'dry'),
+                pain_level=symptoms.get('painLevel', 'none'),
+                drainage_type=symptoms.get('discharge', 'dry'),
                 fever=bool(symptoms.get('fever', False)),
-                redness_spreading=bool(symptoms.get('redness_spread', False)),
+                redness_spreading=bool(symptoms.get('rednessSpread', False)),
                 dressing_changed=bool(symptoms.get('dressingChanged', True))
              )
 
         severity_score = healing_details.get("final_score", 0)
         severity_level = healing_details.get("stage", "Unknown")
 
-        result = generate_enhanced_local_recommendations(classification, wound_type, severity_level, severity_score, tissue, symptoms)
+        # Mock a classification-like object for generate_enhanced_local_recommendations if needed
+        class MockClf:
+            def __init__(self, w): self.wound = w
         
-        rec = Recommendation.objects.create(
-            classification=classification,
-            summary=result.get("summary", ""),
-            cleaning_instructions=result.get("cleaningInstructions", []),
-            dressing_recommendations=result.get("dressingRecommendations", []),
-            warning_signs=result.get("warningsSigns", []),
-            when_to_seek_help=result.get("whenToSeekHelp", []),
-            diet_advice=result.get("dietAdvice", []),
-            activity_restrictions=result.get("activityRestrictions", []),
-            expected_healing_time=result.get("expectedHealingTime", ""),
-            follow_up_schedule=result.get("followUpSchedule", []),
-            ai_confidence=result.get("confidence", 95),
-        )
+        clf_obj = classification or MockClf(wound)
+
+        result = generate_enhanced_local_recommendations(clf_obj, wound_type, severity_level, severity_score, tissue, symptoms)
+        
+        rec_id = None
+        if save_to_db and classification:
+            rec = Recommendation.objects.create(
+                classification=classification,
+                summary=result.get("summary", ""),
+                cleaning_instructions=result.get("cleaningInstructions", []),
+                dressing_recommendations=result.get("dressingRecommendations", []),
+                warning_signs=result.get("warningsSigns", []),
+                when_to_seek_help=result.get("whenToSeekHelp", []),
+                diet_advice=result.get("dietAdvice", []),
+                activity_restrictions=result.get("activityRestrictions", []),
+                expected_healing_time=result.get("expectedHealingTime", ""),
+                follow_up_schedule=result.get("followUpSchedule", []),
+                ai_confidence=result.get("confidence", 95),
+            )
+            rec_id = rec.id
+
 
         return {
             "success": True,
-            "recommendation_id": rec.id,
+            "recommendation_id": rec_id,
             "recommendation": result,
             "risk_level": severity_level,
             "severity_score": float(severity_score),
@@ -257,11 +285,28 @@ def get_recommendations(request):
     classification_id = request.data.get('classification_id')
     wound_type = request.data.get('wound_type', '')
     confidence = float(request.data.get('confidence', 0))
+    # Robust symptom extraction (supports root level, nested clinical_data, camelCase, and snake_case)
+    data = request.data
+    cd = data.get('clinical_data', {}) if isinstance(data.get('clinical_data'), dict) else {}
+    
     symptoms = {
-        'pain_level': request.data.get('pain_level', 'none'),
-        'fever': request.data.get('fever', False),
-        'discharge_type': request.data.get('discharge_type', 'none'),
-        'redness_spread': request.data.get('redness_spread', False)
+        'painLevel': data.get('painLevel') or cd.get('painLevel') or data.get('pain_level') or cd.get('pain_level', 'none'),
+        'fever': any([data.get('fever'), cd.get('fever')]),
+        'discharge': data.get('discharge') or cd.get('discharge') or data.get('discharge_type') or cd.get('discharge_type', 'none'),
+        'rednessSpread': any([data.get('rednessSpread'), cd.get('rednessSpread'), data.get('redness_spread'), cd.get('redness_spread')]),
+        'daysSinceSurgery': data.get('daysSinceSurgery') if data.get('daysSinceSurgery') is not None else (
+            cd.get('daysSinceSurgery') if cd.get('daysSinceSurgery') is not None else (
+                data.get('days_since_surgery') if data.get('days_since_surgery') is not None else (
+                    cd.get('days_since_surgery', 0)
+                )
+            )
+        ),
+        'dressingChanged': data.get('dressingChanged') if data.get('dressingChanged') is not None else (
+            cd.get('dressingChanged') if cd.get('dressingChanged') is not None else (
+                data.get('dressing_changed', True)
+            )
+        )
+
     }
 
     clf = Classification.objects.select_related('wound').filter(id=classification_id).first()
@@ -270,6 +315,9 @@ def get_recommendations(request):
 
     result = get_clinical_recommendations_logic(clf, wound_type, confidence, symptoms)
     if result.get("success"):
+        # Log the refined score with symptoms for transparency
+        print(f"\n[SYMPTOMS] UPDATED SCORE: {result.get('severity_score'):.2f}% | Symptoms: {symptoms}")
+
         return Response(result)
     return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

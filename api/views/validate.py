@@ -11,9 +11,9 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from api import tflite_classifier
 from api.clip_validator import clip_validator
-from api.cv_processor import process_specialized_wound
+from api.cv_processor import process_specialized_wound, detect_open_wound_roi
+
 
 
 
@@ -52,21 +52,67 @@ def validate_image(request):
         clip_category, clip_conf = clip_validator.classify(image_bytes)
         log_debug(f"CLIP categorizer: {clip_category} ({clip_conf:.1f}%)")
         
-        if (clip_category in ["normal_skin", "no_wound"] and clip_conf > 85) or (clip_category == "error" and clip_conf == 0):
-            # If CLIP explicitly says no wound OR if it crashed (conf=0), be more conservative
-            log_debug(f"Categorizer suggests rejection or error: {clip_category}")
-            # We only hard-reject if we are sure it's normal skin
-            if clip_category in ["normal_skin", "no_wound"] and clip_conf > 85:
-                return Response({
-                    "success": True,
-                    "is_valid": False,
-                    "is_blur": False,
-                    "has_wound": False,
-                    "is_healed": False,
-                    "blur_score": 0,
-                    "wound_confidence": 0,
-                    "message": "No active wound detected. Please upload a clear photo of the wound area.",
-                })
+        # CV-based wound-like area detection for secondary validation
+        # Returns (crop, area_px)
+        _, cv_wound_area = detect_open_wound_roi(image_bytes)
+        log_debug(f"CV-detected wound-like area: {cv_wound_area} px")
+
+        # ── Step 0.0: Strict Rejection Logic ──────────────────────────────
+        # CLIP IS FINAL AUTHORITY (User Request: No percentage gates)
+        if clip_category == "no_wound":
+            log_debug(f"Hard rejection: CLIP detected non-medical or non-wound content ({clip_conf:.1f}%)")
+            return Response({
+                "success": True,
+                "is_valid": False,
+                "is_blur": False,
+                "has_wound": False,
+                "is_healed": False,
+                "blur_score": 0,
+                "wound_confidence": clip_conf,
+                "message": "This doesn't look like a medical photo. Please upload a clear photo of the wound area.",
+            })
+
+        if clip_category in ["normal_skin"]:
+            log_debug(f"Hard rejection: CLIP classified as {clip_category} ({clip_conf:.1f}%)")
+            return Response({
+                "success": True,
+                "is_valid": False,
+                "is_blur": False,
+                "has_wound": False,
+                "is_healed": False,
+                "blur_score": 0,
+                "wound_confidence": clip_conf,
+                "message": "No active wound detected. Please upload a clear photo of the wound area.",
+            })
+
+        # 2. Rejection if CLIP is uncertain but CV finds NO significant wound-like area
+        if clip_category == "error" and cv_wound_area < 800:
+            log_debug(f"Rejection: CLIP error + No significant CV wound area ({cv_wound_area})")
+            return Response({
+                "success": True,
+                "is_valid": False,
+                "is_blur": False,
+                "has_wound": False,
+                "is_healed": False,
+                "blur_score": 0,
+                "wound_confidence": 10,
+                "message": "We couldn't clearly identify a wound in this photo. Please ensure the area is well-lit and centered.",
+            })
+
+        # 3. Crash/Error failsafe
+        if clip_category == "error" and clip_conf == 0:
+            log_debug("Categorizer error: default rejection for safety")
+            return Response({
+                "success": True,
+                "is_valid": False,
+                "is_blur": False,
+                "has_wound": False,
+                "is_healed": False,
+                "blur_score": 0,
+                "wound_confidence": 0,
+                "message": "Service error during validation. Please try again.",
+            })
+
 
         # ── Step 0.1: Specialized CV Analysis (Stitches/Scars) ──────────────
         cv_metrics = None
@@ -106,18 +152,27 @@ def validate_image(request):
         wound_confidence = clip_conf
         message = "Wound detected. Proceeding with analysis."
 
-        if clip_category in ["normal_skin", "no_wound"] and clip_conf > 70:
+        if clip_category == "no_wound":
+            is_valid = False
+            has_wound = False
+            message = "This doesn't look like a medical photo or no active wound was detected. Please upload a clear photo of the wound area."
+        elif clip_category in ["normal_skin"]:
+
             is_valid = False
             has_wound = False
             message = "No active wound detected. Please upload a clear photo of the wound area."
         elif clip_category in ["scar", "healed_wound"]:
             is_healed = True
             message = "Healed or closed wound detected."
-        elif clip_category in ["unknown", "error"]:
+        elif clip_category == "blur":
+            is_valid = False
+            has_wound = False
+            message = "The image appears to be blurry. Please retake the photo."
+        elif clip_category == "error":
             # If uncertain, we default to valid=True but with lower confidence
-            # However, if the user says it's validating non-wounds, maybe we should be stricter
             is_valid = True
-            has_wound = False # Changed to False if uncertain
+            has_wound = False 
+
             wound_confidence = 30
             message = "Wound not clearly identified. Please ensure the area is well-lit and centered."
 
@@ -142,12 +197,13 @@ def validate_image(request):
         # Even if everything fails, return a valid response so the app can continue
         return Response({
             "success": True,
-            "is_valid": True,
+            "is_valid": False,
             "is_blur": False,
-            "has_wound": True,
+            "has_wound": False,
             "is_healed": False,
             "blur_score": 999,
-            "wound_confidence": 50,
-            "message": "Validation unavailable. Proceeding with analysis.",
+            "wound_confidence": 0,
+            "message": "Validation error: Please try again or ensure the photo is clear.",
+
         })
 

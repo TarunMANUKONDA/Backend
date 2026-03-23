@@ -161,3 +161,23 @@ TEMPLATES = [
         },
     },
 ]
+
+# ─────────────────────────────────────────────────────────────
+# Logging (Suppress verbose dev logs)
+# ─────────────────────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

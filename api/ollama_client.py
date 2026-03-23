@@ -1,10 +1,12 @@
 import requests
 import json
+import os
 
 class OllamaClient:
-    def __init__(self, base_url="http://127.0.0.1:11434"):
-        self.base_url = base_url
-        self.generate_url = f"{base_url}/api/generate"
+    def __init__(self, base_url=None):
+        self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+        self.generate_url = f"{self.base_url}/api/generate"
+
         self.model = "llama3.2"
         self.system_prompt = """
 You are a specialized Surgical Wound Care AI Assistant. 
@@ -19,8 +21,10 @@ RULES:
 """
 
     def generate_response(self, prompt):
+        print(f"\n[AI BRIDIGE] Sending prompt to {self.model}: {prompt[:50]}...")
         payload = {
-            "model": self.model,
+            "model": "llama3.2:latest",
+
             "prompt": prompt,
             "system": self.system_prompt,
             "stream": False
@@ -28,6 +32,8 @@ RULES:
         
         try:
             response = requests.post(self.generate_url, json=payload, timeout=30)
+            print(f"[AI BRIDGE] Received status: {response.status_code}")
+
             response.raise_for_status()
             data = response.json()
             return {
@@ -36,6 +42,8 @@ RULES:
                 "model": data.get("model", "")
             }
         except requests.exceptions.RequestException as e:
+            print(f"[AI BRIDGE] Error: {str(e)}")
+
             return {
                 "success": False,
                 "error": f"AI Bridge connection error: {str(e)}"

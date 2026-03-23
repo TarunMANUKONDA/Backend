@@ -11,7 +11,7 @@ from api.models import Wound, Comparison as ComparisonModel
 
 @api_view(['POST'])
 def compare_wounds(request):
-    """Compare two wound images using local tissue data."""
+    """Compare two wound images using local tissue data (No Gemini)."""
     base_id = request.data.get('base_wound_id')
     curr_id = request.data.get('current_wound_id')
 
