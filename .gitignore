@@ -10,4 +10,3 @@ api/models/clip/
 api/models/*.bin
 api/models/*.pt
 api/models/*.h5
-api/models/*.tflite

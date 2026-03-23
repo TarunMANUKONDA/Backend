@@ -1,12 +1,11 @@
 """
-classify.py — Wound Classification with TFLite + Local CV Analysis
+classify.py — Wound Classification matching Clinical Tissue Analysis
 
 Pipeline:
-  1. Run custom TFLite model → wound type classification (4 classes)
-  2. Run CLIP categorizer → wound category validation
-  3. Run specialized CV ROI detection (stitches, burns, scars)
-  4. Run high-precision Lab-based tissue analysis
-  5. Calculate healing score and stage using clinical heuristics
+  1. Run CLIP categorizer → wound category validation
+  2. Run specialized CV ROI detection (stitches, burns, scars)
+  3. Run high-precision Lab-based tissue analysis
+  4. Calculate healing score and stage using clinical heuristics
 """
 
 import json
@@ -220,7 +219,7 @@ def normalize_wound_type(raw: str) -> str:
 
 def _classify_wound_internal(request, save_to_db=True):
     """
-    Internal logic for wound classification.
+    Internal logic for wound classification using CLIP and CV analysis.
     Decoupled from persistence to allow 'preview' mode.
     """
     wound_id = request.data.get('wound_id')
@@ -561,7 +560,7 @@ def _classify_wound_internal(request, save_to_db=True):
 @api_view(['POST'])
 def classify_wound(request):
     """
-    Classify wound using TFLite + Local CLIP Tissue Analysis.
+    Classify wound using CLIP + Local CV Analysis.
     Wraps the internal logic for the public API endpoint.
     """
     return _classify_wound_internal(request, save_to_db=True)
