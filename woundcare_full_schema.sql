@@ -1,7 +1,12 @@
--- AI-Powered Surgical Wound Care Tool Database Schema
+-- AI-Powered Surgical Wound Care Tool FULL Database Schema
+-- Includes custom app (api) and Django internal tables (auth, contenttypes)
 -- Generated from Django Migrations
 
--- Migration 0001
+-- =============================================================
+-- APP: api
+-- =============================================================
+
+-- Migration api.0001
 --
 -- Create model User
 --
@@ -51,21 +56,21 @@ ALTER TABLE `comparisons` ADD CONSTRAINT `comparisons_wound_after_id_b43fbc4d_fk
 ALTER TABLE `comparisons` ADD CONSTRAINT `comparisons_wound_before_id_72719921_fk_wounds_id` FOREIGN KEY (`wound_before_id`) REFERENCES `wounds` (`id`);
 
 
--- Migration 0002
+-- Migration api.0002
 --
 -- Add field gender to user
 --
 ALTER TABLE `users` ADD COLUMN `gender` varchar(20) NULL;
 
 
--- Migration 0003
+-- Migration api.0003
 --
 -- Add field age to user
 --
 ALTER TABLE `users` ADD COLUMN `age` integer NULL;
 
 
--- Migration 0004
+-- Migration api.0004
 --
 -- Add field pending_age to emailverificationotp
 --
@@ -80,7 +85,7 @@ ALTER TABLE `email_verification_otps` ADD COLUMN `pending_gender` varchar(20) NU
 ALTER TABLE `email_verification_otps` ADD COLUMN `pending_phone` varchar(20) NULL;
 
 
--- Migration 0005
+-- Migration api.0005
 --
 -- Add field status to case
 --
@@ -88,12 +93,144 @@ ALTER TABLE `cases` ADD COLUMN `status` varchar(50) DEFAULT 'active' NOT NULL;
 ALTER TABLE `cases` ALTER COLUMN `status` DROP DEFAULT;
 
 
--- Migration 0006
+-- Migration api.0006
 --
 -- Add field is_confirmed to wound
 --
 ALTER TABLE `wounds` ADD COLUMN `is_confirmed` bool DEFAULT b'0' NOT NULL;
 ALTER TABLE `wounds` ALTER COLUMN `is_confirmed` DROP DEFAULT;
 CREATE INDEX `wounds_is_confirmed_10c7ca33` ON `wounds` (`is_confirmed`);
+
+
+-- =============================================================
+-- APP: auth
+-- =============================================================
+
+-- Migration auth.0001
+--
+-- Create model Permission
+--
+CREATE TABLE `auth_permission` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(50) NOT NULL, `content_type_id` integer NOT NULL, `codename` varchar(100) NOT NULL);
+--
+-- Create model Group
+--
+CREATE TABLE `auth_group` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(80) NOT NULL UNIQUE);
+CREATE TABLE `auth_group_permissions` (`id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY, `group_id` integer NOT NULL, `permission_id` integer NOT NULL);
+--
+-- Create model User
+--
+-- (no-op)
+ALTER TABLE `auth_permission` ADD CONSTRAINT `auth_permission_content_type_id_codename_01ab375a_uniq` UNIQUE (`content_type_id`, `codename`);
+ALTER TABLE `auth_permission` ADD CONSTRAINT `auth_permission_content_type_id_2f476e4b_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`);
+ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group_permissions_group_id_permission_id_0cd325b0_uniq` UNIQUE (`group_id`, `permission_id`);
+ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group_permissions_group_id_b120cbf9_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`);
+ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group_permissio_permission_id_84c5c92e_fk_auth_perm` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission` (`id`);
+
+
+-- Migration auth.0002
+--
+-- Alter field name on permission
+--
+ALTER TABLE `auth_permission` MODIFY `name` varchar(255) NOT NULL;
+
+
+-- Migration auth.0003
+--
+-- Alter field email on user
+--
+-- (no-op)
+
+
+-- Migration auth.0004
+--
+-- Alter field username on user
+--
+-- (no-op)
+
+
+-- Migration auth.0005
+--
+-- Alter field last_login on user
+--
+-- (no-op)
+
+
+-- Migration auth.0006
+
+
+-- Migration auth.0007
+--
+-- Alter field username on user
+--
+-- (no-op)
+
+
+-- Migration auth.0008
+--
+-- Alter field username on user
+--
+-- (no-op)
+
+
+-- Migration auth.0009
+--
+-- Alter field last_name on user
+--
+-- (no-op)
+
+
+-- Migration auth.0010
+--
+-- Alter field name on group
+--
+ALTER TABLE `auth_group` MODIFY `name` varchar(150) NOT NULL;
+
+
+-- Migration auth.0011
+--
+-- Raw Python operation
+--
+-- THIS OPERATION CANNOT BE WRITTEN AS SQL
+
+
+-- Migration auth.0012
+--
+-- Alter field first_name on user
+--
+-- (no-op)
+
+
+-- =============================================================
+-- APP: contenttypes
+-- =============================================================
+
+-- Migration contenttypes.0001
+--
+-- Create model ContentType
+--
+CREATE TABLE `django_content_type` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(100) NOT NULL, `app_label` varchar(100) NOT NULL, `model` varchar(100) NOT NULL);
+--
+-- Alter unique_together for contenttype (1 constraint(s))
+--
+ALTER TABLE `django_content_type` ADD CONSTRAINT `django_content_type_app_label_model_76bd3d3b_uniq` UNIQUE (`app_label`, `model`);
+
+
+-- Migration contenttypes.0002
+--
+-- Change Meta options on contenttype
+--
+-- (no-op)
+--
+-- Alter field name on contenttype
+--
+ALTER TABLE `django_content_type` MODIFY `name` varchar(100) NULL;
+--
+-- Raw Python operation
+--
+-- THIS OPERATION CANNOT BE WRITTEN AS SQL
+--
+-- Remove field name from contenttype
+--
+ALTER TABLE `django_content_type` DROP COLUMN `name`;
 
 
