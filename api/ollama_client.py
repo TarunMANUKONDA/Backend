@@ -31,7 +31,7 @@ RULES:
         }
         
         try:
-            response = requests.post(self.generate_url, json=payload, timeout=30)
+            response = requests.post(self.generate_url, json=payload, timeout=90)
             print(f"[AI BRIDGE] Received status: {response.status_code}")
 
             response.raise_for_status()
@@ -40,6 +40,12 @@ RULES:
                 "success": True,
                 "response": data.get("response", ""),
                 "model": data.get("model", "")
+            }
+        except requests.exceptions.Timeout:
+            print("[AI BRIDGE] Error: Connection timed out (90s limit). This can happen during first model load or on slow systems.")
+            return {
+                "success": False,
+                "error": "AI Bridge connection error: The AI model took too long to respond. Please try again in 1-2 minutes while the model loads."
             }
         except requests.exceptions.RequestException as e:
             print(f"[AI BRIDGE] Error: {str(e)}")
