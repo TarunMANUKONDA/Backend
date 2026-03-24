@@ -6,7 +6,11 @@ uploads/
 *.txt
 *.db
 db.sqlite3
-api/models/clip/
-api/models/*.bin
-api/models/*.pt
-api/models/*.h5
+# api/models/clip/ is no longer excluded entirely to allow tracking configs
+# api/models/clip/ is no longer excluded entirely to allow tracking configs
+api/models/**/*.bin
+api/models/**/*.pt
+api/models/**/*.h5
+api/models/**/*.tflite
+api/models/**/*.onnx
+
