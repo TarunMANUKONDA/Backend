@@ -66,11 +66,21 @@ def confirm_wound(request, wound_id):
         healing_details = data.get("healing_details", {})
         tissue_comp = tissue or {}
         
+        # Extract critical metrics for top-level persistence in analysis JSON
+        healing_score = data.get("healingScore") or healing_details.get("healingScore") or data.get("severity_score")
+        risk_level = data.get("riskLevel") or data.get("risk_level")
+        severity_level = data.get("severityLevel") or data.get("severity_level")
+        severity_label = data.get("severityLabel") or data.get("severity_label")
+
         wound.analysis = {
             "source": "manual_confirmation_persistence",
             "tissue_composition": tissue_comp,
             "wound_area_pixels": data.get("wound_area_pixels") or healing_details.get("wound_area") or data.get("woundSize", {}).get("area"),
             "healing_details": healing_details,
+            "healingScore": healing_score,
+            "riskLevel": risk_level,
+            "severityLevel": severity_level,
+            "severityLabel": severity_label,
             "notes": f"Saved via User Confirmation. Stage: {healing_details.get('stage') or 'N/A'}."
         }
         

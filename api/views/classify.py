@@ -514,6 +514,10 @@ def _classify_wound_internal(request, save_to_db=True):
                 "lab_metrics": lab_metrics_clean,
                 "wound_area_pixels": wound_area,
                 "healing_details": healing_results,
+                "healingScore": healing_results.get("healingScore", final_score),
+                "riskLevel": android_risk,
+                "severityLevel": severity_level,
+                "severityLabel": tissue_type,
                 "notes": f"High-precision segmentation analysis ({'Masked' if mask is not None else 'Unmasked'}). Dominant: {max(tissue_composition, key=lambda k: tissue_composition.get(k, 0))}. Area: {wound_area} px."
             }
             wound.save()

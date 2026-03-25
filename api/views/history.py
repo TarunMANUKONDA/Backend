@@ -84,6 +84,41 @@ def get_history(request):
             img_path = 'uploads/' + img_path
 
 
+        # Compute metrics on the fly if missing from analysis (legacy records)
+        analysis = wound.analysis or {}
+        
+        healing_score = analysis.get('healingScore')
+        if healing_score is None:
+            # Fallback for historical data
+            healing_score = analysis.get('healing_details', {}).get('healingScore', 
+                            analysis.get('overallHealth', 
+                            wound.confidence or 70))
+        
+        risk_level = (analysis.get('riskLevel') or 
+                      analysis.get('risk_level') or 
+                      analysis.get('severityLevel'))
+        
+        if not risk_level:
+            # Calculate from score
+            if healing_score < 35: risk_level = "critical"
+            elif healing_score < 55: risk_level = "infected"
+            elif healing_score < 75: risk_level = "warning"
+            else: risk_level = "normal"
+
+        # Legacy severity logic (preserved for compatibility)
+        severity_level = analysis.get('severityLevel')
+        severity_label = analysis.get('severityLabel')
+        
+        if (not severity_level or not severity_label) and wound.status == 'analyzed':
+            from .classify import compute_severity_from_tissue
+            t_type, s_level, _ = compute_severity_from_tissue(
+                wound.tissue_composition or {}, 
+                discharge_type=wound.discharge_type or 'none',
+                redness_level=wound.redness_level or 30.0
+            )
+            severity_level = severity_level or s_level
+            severity_label = severity_label or t_type
+
         wounds_data.append({
             "wound_id": wound.id,
             "case_id": wound.case_id,
@@ -98,15 +133,20 @@ def get_history(request):
             "discharge_type": wound.discharge_type,
             "edge_quality": wound.edge_quality,
             "tissue_composition": wound.tissue_composition,
+            "severity_level": severity_level,
+            "severity_label": severity_label,
+            "healing_score": healing_score,
+            "risk_level": risk_level,
             "classification": {
-                "classification_id": clf.id,
-                "wound_type": clf.wound_type,
-                "confidence": clf.confidence,
-                "probabilities": clf.all_probabilities,
-            } if clf else (
-                {"wound_type": wound.classification, "confidence": wound.confidence}
-                if wound.classification else None
-            ),
+                "classification_id": clf.id if clf else None,
+                "wound_type": clf.wound_type if clf else (wound.classification or "Wound"),
+                "confidence": clf.confidence if clf else (wound.confidence or 0),
+                "probabilities": clf.all_probabilities if clf else None,
+                "severity_level": severity_level,
+                "severity_label": severity_label,
+                "healing_score": healing_score,
+                "risk_level": risk_level,
+            } if (clf or wound.classification) else None,
             "recommendation": recommendation,
         })
 
@@ -170,8 +210,31 @@ def get_cases(request):
             
             # Extract latest score and risk from saved analysis
             if latest_wound.analysis:
-                latest_score = latest_wound.analysis.get('healingScore', latest_wound.analysis.get('overallHealth', 70))
-                latest_risk = latest_wound.analysis.get('riskLevel', 'normal')
+                latest_score = latest_wound.analysis.get('healingScore')
+                if latest_score is None:
+                    # Fallback to nested healing_details or overallHealth
+                    latest_score = latest_wound.analysis.get('healing_details', {}).get('healingScore', 
+                                   latest_wound.analysis.get('overallHealth', 
+                                   latest_wound.confidence or 70))
+                
+                # Try all common risk keys
+                latest_risk = (latest_wound.analysis.get('riskLevel') or 
+                               latest_wound.analysis.get('risk_level') or 
+                               latest_wound.analysis.get('severityLevel'))
+                
+                # If still missing, calculate on-the-fly from score (Standard Thresholds)
+                if not latest_risk:
+                    if latest_score < 35: latest_risk = "critical"
+                    elif latest_score < 55: latest_risk = "infected"
+                    elif latest_score < 75: latest_risk = "warning"
+                    else: latest_risk = "normal"
+            else:
+                # Absolute fallback if no analysis JSON exists
+                latest_score = latest_wound.confidence or 70
+                if latest_score < 35: latest_risk = "critical"
+                elif latest_score < 55: latest_risk = "infected"
+                elif latest_score < 75: latest_risk = "warning"
+                else: latest_risk = "normal"
             
             latest_tissue = latest_wound.tissue_composition or (latest_wound.analysis.get('tissue_composition') if latest_wound.analysis else None)
 
