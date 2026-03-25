@@ -38,7 +38,7 @@ class User(AbstractBaseUser):
     blood_type = models.CharField(max_length=10, null=True, blank=True)
     emergency_contact = models.CharField(max_length=100, null=True, blank=True)
     emergency_phone = models.CharField(max_length=20, null=True, blank=True)
-    profile_image = models.CharField(max_length=255, null=True, blank=True)
+    profile_image = models.TextField(null=True, blank=True)
     email_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
