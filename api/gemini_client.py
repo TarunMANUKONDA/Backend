@@ -7,8 +7,10 @@ load_dotenv()
 class GeminiClient:
     def __init__(self, api_key=None):
         self.api_key = api_key or os.getenv("GOOGLE_API_KEY")
-        if self.api_key:
+        self._is_configured = False
+        if self.api_key and self.api_key != "your_google_api_key_here":
             genai.configure(api_key=self.api_key)
+            self._is_configured = True
         
         self.model_name = "gemini-1.5-flash" # High speed, low cost/free
         self.system_prompt = """
@@ -24,10 +26,17 @@ RULES:
 """
 
     def generate_response(self, prompt):
-        if not self.api_key or self.api_key == "your_google_api_key_here":
+        # Try to pick up key from environment if not already set (helps if server didn't restart)
+        if not self._is_configured:
+            self.api_key = os.getenv("GOOGLE_API_KEY")
+            if self.api_key and self.api_key != "your_google_api_key_here":
+                genai.configure(api_key=self.api_key)
+                self._is_configured = True
+
+        if not self._is_configured:
             return {
                 "success": False,
-                "error": "Google API Key is not configured. Please add GOOGLE_API_KEY to your .env file."
+                "error": "Google API Key is not configured. Please add GOOGLE_API_KEY to your .env file and RESTART your server."
             }
 
         print(f"\n[GEMINI BRIDGE] Sending prompt to {self.model_name}: {prompt[:50]}...")
